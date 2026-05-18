@@ -12,20 +12,18 @@ FB_PAGE_TOKEN = os.getenv("FB_PAGE_TOKEN")
 
 
 @router.get("/webhook/facebook")
-def verify(
-    hub_mode: str = Query(None, alias="hub.mode"),
-    hub_challenge: str = Query(None, alias="hub.challenge"),
-    hub_verify_token: str = Query(None, alias="hub.verify_token"),
-):
+async def verify(request: Request):
 
-    if hub_mode == "subscribe" and hub_verify_token == VERIFY_TOKEN:
-        return PlainTextResponse(content=hub_challenge)
+    hub_verify_token = request.query_params.get("hub.verify_token")
+    hub_challenge = request.query_params.get("hub.challenge")
+
+    if hub_verify_token == VERIFY_TOKEN:
+        return PlainTextResponse(hub_challenge)
 
     return PlainTextResponse(
-        content="Verification failed",
+        "Verification failed",
         status_code=403
     )
-
 
 @router.post("/webhook/facebook")
 async def webhook(request: Request):
